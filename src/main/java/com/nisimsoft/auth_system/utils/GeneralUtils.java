@@ -4,6 +4,7 @@ public class GeneralUtils {
     public static final String[] EXCLUDED_PATHS = {
             "/api/login",
             "/api/public/**",
-            "/api/verify-user"
+            "/api/verify-user",
+            "/api/register"
     };
 }
