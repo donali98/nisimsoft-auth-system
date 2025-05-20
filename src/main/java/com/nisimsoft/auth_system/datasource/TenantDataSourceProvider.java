@@ -58,6 +58,8 @@ public class TenantDataSourceProvider {
             case POSTGRESQL -> "jdbc:postgresql://" + corp.getHost();
             case MSSQL -> "jdbc:sqlserver://" + corp.getHost() + ";databaseName=" + corp.getDbName()
                     + ";encrypt=false;trustServerCertificate=true";
+            case AZURE -> "jdbc:sqlserver://" + corp.getHost() + ";databaseName=" + corp.getDbName()
+                    + ";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
             case ORACLE -> "jdbc:oracle:thin:@" + corp.getHost();
         };
     }
@@ -66,7 +68,7 @@ public class TenantDataSourceProvider {
         return switch (engine) {
             case MYSQL -> "com.mysql.cj.jdbc.Driver";
             case POSTGRESQL -> "org.postgresql.Driver";
-            case MSSQL -> "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+            case MSSQL, AZURE -> "com.microsoft.sqlserver.jdbc.SQLServerDriver";
             case ORACLE -> "oracle.jdbc.OracleDriver";
         };
     }

@@ -5,6 +5,7 @@ public class GeneralUtils {
             "/api/login",
             "/api/public/**",
             "/api/verify-user",
-            "/api/register"
+            "/api/register",
+            "/api/corporation"
     };
 }

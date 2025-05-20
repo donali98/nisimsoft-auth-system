@@ -4,5 +4,6 @@ public enum NSCorpDBEngineEnum {
     MSSQL,
     MYSQL,
     ORACLE,
-    POSTGRESQL
+    POSTGRESQL,
+    AZURE
 }
