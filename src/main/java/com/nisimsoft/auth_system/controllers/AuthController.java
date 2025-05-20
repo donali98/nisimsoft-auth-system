@@ -3,9 +3,11 @@ package com.nisimsoft.auth_system.controllers;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
+import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.UserResponseDTO;
 import com.nisimsoft.auth_system.entities.Corporation;
+import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.entities.User;
 import com.nisimsoft.auth_system.exceptions.auth.AuthenticationFailedException;
 import com.nisimsoft.auth_system.responses.Response;
@@ -65,7 +67,8 @@ public class AuthController {
         user.getName(),
         user.getUsername(),
         user.getEmail(),
-        corporationDTOs);
+        corporationDTOs,
+        mapRoles(user.getRoles()));
 
     return new Response(
         "Usuario registrado exitosamente", responseDTO, HttpStatus.CREATED);
@@ -87,7 +90,8 @@ public class AuthController {
         user.getName(),
         user.getUsername(),
         user.getEmail(),
-        corporationDTOs);
+        corporationDTOs,
+        mapRoles(user.getRoles()));
 
     return new Response("Usuario encontrado exitosamente", responseDTO, HttpStatus.OK);
   }
@@ -104,7 +108,15 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
-    return new Response("Autenticación exitosa", Map.of("token", token), HttpStatus.OK);
+    UserResponseDTO userResponseDTO = new UserResponseDTO(
+        user.getId(),
+        user.getName(),
+        user.getUsername(),
+        user.getEmail(),
+        mapCorporations(user.getCorporations()),
+        mapRoles(user.getRoles()));
+
+    return new Response("Autenticación exitosa", Map.of("user", userResponseDTO, "token", token), HttpStatus.OK);
   }
 
   private AuthenticationProvider getAuthenticationProvider() {
@@ -118,6 +130,12 @@ public class AuthController {
   private List<CorporationResponseDTO> mapCorporations(Set<Corporation> corporations) {
     return corporations.stream()
         .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
+        .toList();
+  }
+
+  private List<RoleResponseDTO> mapRoles(Set<Role> roles) {
+    return roles.stream()
+        .map(corp -> new RoleResponseDTO(corp.getId(), corp.getName(), corp.getDescription()))
         .toList();
   }
 }
