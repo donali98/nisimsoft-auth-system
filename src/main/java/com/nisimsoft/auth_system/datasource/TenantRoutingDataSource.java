@@ -30,7 +30,8 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
             return "default";
         }
 
-        System.out.println("Lookup tenant: " + tenantId);
+        else
+            System.out.println("Lookup tenant: " + tenantId);
 
         // ✅ Si no existe, lo agregamos y forzamos reload
         if (!tenantDataSources.containsKey(tenantId)) {
