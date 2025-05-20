@@ -19,6 +19,6 @@ public class SaveRoleRequest {
 
     @NotNull(message = "La lista de permisos no puede ser nula")
     @NotEmpty(message = "Debe proporcionar al menos un id de permiso")
-    @Size(min = 1, message = "Debe haber al menos 1 id permiso")
+    @Size(min = 1, message = "Debe haber al menos 1 id de permiso")
     private List<@Positive(message = "Los IDs de permisos deben ser positivos") Long> permissions;
 }

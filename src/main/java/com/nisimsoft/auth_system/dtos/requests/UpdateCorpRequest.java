@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class UpdateCorpRequest {
 
-    @Min(value = 1, message = "El ID de la corporación debe ser mayor que 0")
+    @Min(value = 1, message = "El id de la corporación debe ser mayor que 0")
     @ExistsInDatabase(table = "ns_corp", column = "id", entityName = "corporación")
     private Long id;
 

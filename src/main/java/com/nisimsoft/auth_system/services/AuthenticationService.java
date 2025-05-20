@@ -1,15 +1,23 @@
 package com.nisimsoft.auth_system.services;
 
+import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.SaveRoleRequest;
 import com.nisimsoft.auth_system.entities.Corporation;
+import com.nisimsoft.auth_system.entities.Permission;
+import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.entities.User;
 import com.nisimsoft.auth_system.exceptions.auth.AuthenticationFailedException;
 import com.nisimsoft.auth_system.exceptions.auth.EmailAlreadyExistsException;
 import com.nisimsoft.auth_system.repositories.CorporationRepository;
+import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.repositories.UserRepository;
 import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
 
+import jakarta.transaction.Transactional;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +34,7 @@ public class AuthenticationService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final CorporationRepository corporationRepository;
+  private final RoleRepository roleRepository;
 
   public User registerUser(RegisterUserRequest request) {
 
@@ -76,5 +85,25 @@ public class AuthenticationService {
   public User getUserByIdOrThrow(Long id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+  }
+
+  @Transactional
+  public User assignRoleToUser(AssignRolesToUserRequest request) {
+
+    User user = userRepository.findById(request.getId())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
+
+    List<Long> roleIds = request.getRoles();
+    // Buscar los permisos por ID
+    List<Role> foundRoles = roleRepository.findAllById(roleIds);
+
+    if (foundRoles.size() != request.getRoles().size()) {
+      throw new IllegalArgumentException("Uno o más roles no existen en el sistema");
+    }
+
+    // Actualizar el set de permisos
+    user.setRoles(new HashSet<>(foundRoles));
+
+    return userRepository.save(user);
   }
 }
