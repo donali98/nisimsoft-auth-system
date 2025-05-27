@@ -2,9 +2,7 @@ package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
-import com.nisimsoft.auth_system.dtos.requests.SaveRoleRequest;
 import com.nisimsoft.auth_system.entities.Corporation;
-import com.nisimsoft.auth_system.entities.Permission;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.entities.User;
 import com.nisimsoft.auth_system.exceptions.auth.AuthenticationFailedException;
