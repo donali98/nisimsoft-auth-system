@@ -52,4 +52,8 @@ public class Role {
     @JoinTable(name = "ns_permission_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     @JsonIgnoreProperties("permissions") // Evita recursividad al serializar
     private Set<Permission> permissions = new HashSet<>();
+
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Program> programs = new HashSet<>();
 }
