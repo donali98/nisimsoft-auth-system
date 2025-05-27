@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -135,6 +136,30 @@ public class GlobalExceptionHandler {
         "Violación de integridad de datos",
         "La operación no pudo completarse por una restricción en la base de datos: "
             + ex.getMostSpecificCause().getMessage(),
+        getRequestPath(request));
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidDataAccessApiUsage(
+      InvalidDataAccessApiUsageException ex, WebRequest request) {
+
+    ErrorResponse response = new ErrorResponse(
+        "Error en la operación con base de datos",
+        ex.getMessage(), // o un mensaje personalizado si preferís
+        getRequestPath(request));
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleIllegalArgument(
+      IllegalArgumentException ex, WebRequest request) {
+
+    ErrorResponse response = new ErrorResponse(
+        "Parámetros inválidos",
+        ex.getMessage(),
         getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
