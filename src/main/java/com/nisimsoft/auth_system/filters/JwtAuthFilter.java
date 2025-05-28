@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nisimsoft.auth_system.responses.ErrorResponse;
 import com.nisimsoft.auth_system.utils.GeneralUtils;
 import com.nisimsoft.auth_system.utils.JwtUtils;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -29,8 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-  @Autowired
-  private final JwtUtils jwtUtils;
+  @Autowired private final JwtUtils jwtUtils;
 
   private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -62,7 +60,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           // System.out.println("✅ Tenant seteado desde token: " + corpId);
           // TenantContext.setTenant(corpId);
 
-          UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null, null);
+          UsernamePasswordAuthenticationToken authToken =
+              new UsernamePasswordAuthenticationToken(email, null, null);
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authToken);
         } else {

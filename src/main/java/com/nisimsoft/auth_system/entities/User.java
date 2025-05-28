@@ -1,14 +1,12 @@
 package com.nisimsoft.auth_system.entities;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,12 +44,18 @@ public class User {
   private String password;
 
   @ManyToMany
-  @JoinTable(name = "ns_corp_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "corp_id"))
+  @JoinTable(
+      name = "ns_corp_users",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "corp_id"))
   @JsonIgnoreProperties("users") // Evita recursividad al serializar
   private Set<Corporation> corporations = new HashSet<>();
 
   @ManyToMany
-  @JoinTable(name = "ns_role_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+  @JoinTable(
+      name = "ns_role_users",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
   @JsonIgnoreProperties("roles") // Evita recursividad al serializar
   private Set<Role> roles = new HashSet<>();
 }

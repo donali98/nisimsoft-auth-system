@@ -33,11 +33,7 @@ public class JwtUtils {
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     SecretKey key = getSigningKey();
-    Claims claims = Jwts.parser()
-        .verifyWith(key)
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
+    Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     return claimsResolver.apply(claims);
   }
 

@@ -11,15 +11,11 @@ import com.nisimsoft.auth_system.repositories.CorporationRepository;
 import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.repositories.UserRepository;
 import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
-
 import jakarta.transaction.Transactional;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,8 +57,10 @@ public class AuthenticationService {
   }
 
   public User getUserByEmailOrThrow(String email) {
-    return userRepository.findByEmail(email)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    return userRepository
+        .findByEmail(email)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
   }
 
   public void authenticateOrThrow(AuthenticationProvider provider, String email, String password) {
@@ -72,24 +70,29 @@ public class AuthenticationService {
   }
 
   public void validateUserBelongsToCorporation(User user, Long corpId) {
-    boolean belongs = user.getCorporations()
-        .stream()
-        .anyMatch(c -> c.getId().equals(corpId));
+    boolean belongs = user.getCorporations().stream().anyMatch(c -> c.getId().equals(corpId));
     if (!belongs) {
       throw new AuthenticationFailedException("El usuario no pertenece a la corporación");
     }
   }
 
   public User getUserByIdOrThrow(Long id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    return userRepository
+        .findById(id)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
   }
 
   @Transactional
   public User assignRoleToUser(AssignRolesToUserRequest request) {
 
-    User user = userRepository.findById(request.getId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
+    User user =
+        userRepository
+            .findById(request.getId())
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
 
     List<Long> roleIds = request.getRoles();
     // Buscar los permisos por ID

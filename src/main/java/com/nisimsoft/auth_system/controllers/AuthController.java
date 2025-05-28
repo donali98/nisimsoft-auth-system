@@ -4,6 +4,7 @@ import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.AssignRoleToUserResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
@@ -15,16 +16,14 @@ import com.nisimsoft.auth_system.exceptions.auth.AuthenticationFailedException;
 import com.nisimsoft.auth_system.responses.Response;
 import com.nisimsoft.auth_system.services.AuthProviderFactory;
 import com.nisimsoft.auth_system.services.AuthenticationService;
+import com.nisimsoft.auth_system.services.ProgramService;
 import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
 import com.nisimsoft.auth_system.utils.JwtUtils;
-
 import jakarta.validation.Valid;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -37,14 +36,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class AuthController {
-  @Autowired
-  private AuthenticationService authenticationService;
+  @Autowired private AuthenticationService authenticationService;
 
-  @Autowired
-  private AuthProviderFactory authProviderFactory;
+  @Autowired private ProgramService programService;
 
-  @Autowired
-  private JwtUtils jwtUtils;
+  @Autowired private AuthProviderFactory authProviderFactory;
+
+  @Autowired private JwtUtils jwtUtils;
 
   @Value("${app.auth.provider}")
   private String activeAuthProvider;
@@ -60,40 +58,48 @@ public class AuthController {
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
 
     // Convertir corporaciones a resumen DTO
-    List<CorporationResponseDTO> corporationDTOs = safeCorporations.stream()
-        .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
-        .toList();
+    List<CorporationResponseDTO> corporationDTOs =
+        safeCorporations.stream()
+            .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
+            .toList();
 
-    UserResponseDTO responseDTO = new UserResponseDTO(
-        user.getId(),
-        user.getName(),
-        user.getUsername(),
-        user.getEmail(),
-        corporationDTOs,
-        mapRoles(user.getRoles()));
+    List<ProgramResponseDTO> programTree = programService.getProgramTree();
 
-    return new Response(
-        "Usuario registrado exitosamente", responseDTO, HttpStatus.CREATED);
+    UserResponseDTO responseDTO =
+        new UserResponseDTO(
+            user.getId(),
+            user.getName(),
+            user.getUsername(),
+            user.getEmail(),
+            corporationDTOs,
+            mapRoles(user.getRoles()),
+            programTree);
+
+    return new Response("Usuario registrado exitosamente", responseDTO, HttpStatus.CREATED);
   }
 
   @PostMapping("/verify-user")
   public ResponseEntity<?> verifyUser(@Valid @RequestBody VerifyUserRequest request) {
-    AuthenticationProvider provider = getAuthenticationProvider();
+    // AuthenticationProvider provider = getAuthenticationProvider();
 
     User user = authenticationService.getUserByEmailOrThrow(request.getEmail());
 
-    authenticationService.authenticateOrThrow(provider, request.getEmail(), request.getPassword());
+    // authenticationService.authenticateOrThrow(provider, request.getEmail(),
+    // request.getPassword());
 
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
+    List<ProgramResponseDTO> programTree = programService.getProgramTree();
 
-    UserResponseDTO responseDTO = new UserResponseDTO(
-        user.getId(),
-        user.getName(),
-        user.getUsername(),
-        user.getEmail(),
-        corporationDTOs,
-        mapRoles(user.getRoles()));
+    UserResponseDTO responseDTO =
+        new UserResponseDTO(
+            user.getId(),
+            user.getName(),
+            user.getUsername(),
+            user.getEmail(),
+            corporationDTOs,
+            mapRoles(user.getRoles()),
+            programTree);
 
     return new Response("Usuario encontrado exitosamente", responseDTO, HttpStatus.OK);
   }
@@ -110,15 +116,20 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
-    UserResponseDTO userResponseDTO = new UserResponseDTO(
-        user.getId(),
-        user.getName(),
-        user.getUsername(),
-        user.getEmail(),
-        mapCorporations(user.getCorporations()),
-        mapRoles(user.getRoles()));
+    List<ProgramResponseDTO> programTree = programService.getProgramTree();
 
-    return new Response("Autenticación exitosa", Map.of("user", userResponseDTO, "token", token), HttpStatus.OK);
+    UserResponseDTO userResponseDTO =
+        new UserResponseDTO(
+            user.getId(),
+            user.getName(),
+            user.getUsername(),
+            user.getEmail(),
+            mapCorporations(user.getCorporations()),
+            mapRoles(user.getRoles()),
+            programTree);
+
+    return new Response(
+        "Autenticación exitosa", Map.of("user", userResponseDTO, "token", token), HttpStatus.OK);
   }
 
   @PostMapping("/assign-roles")
@@ -126,14 +137,17 @@ public class AuthController {
 
     User savedUser = authenticationService.assignRoleToUser(request);
 
-    AssignRoleToUserResponseDTO responseDTO = new AssignRoleToUserResponseDTO(
-        savedUser.getId(),
-        savedUser.getName(),
-        savedUser.getUsername(),
-        savedUser.getEmail(),
-        savedUser.getRoles().stream()
-            .map(role -> new RoleResponseDTO(role.getId(), role.getName(), role.getDescription()))
-            .toList());
+    AssignRoleToUserResponseDTO responseDTO =
+        new AssignRoleToUserResponseDTO(
+            savedUser.getId(),
+            savedUser.getName(),
+            savedUser.getUsername(),
+            savedUser.getEmail(),
+            savedUser.getRoles().stream()
+                .map(
+                    role ->
+                        new RoleResponseDTO(role.getId(), role.getName(), role.getDescription()))
+                .toList());
 
     return new Response("Rol asignado al usuario exitosamente", responseDTO, HttpStatus.CREATED);
   }

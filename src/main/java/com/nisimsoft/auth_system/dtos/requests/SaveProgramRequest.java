@@ -1,24 +1,28 @@
 package com.nisimsoft.auth_system.dtos.requests;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Data;
 
 @Data
 public class SaveProgramRequest {
-    @NotBlank(message = "El nombre del programa es obligatorio")
-    private String name;
+  private Long id = null;
 
-    @NotBlank(message = "El valor del nombre de acceso es obligatorio")
-    @Pattern(regexp = "^[a-z]+(_[a-z]+)*$", message = "El valor debe estar en formato snake_case, solo letras minúsculas y guiones bajos simples")
-    private String accessName;
+  @NotBlank(message = "El nombre del programa es obligatorio")
+  private String name;
 
-    private String uri = null;
+  private String uri = null;
 
-    private Long parentId = null;
+  private Long parentId = null;
 
-    private String icon = null;
+  private String icon = null;
 
-    private Boolean pinned = false;
+  private Boolean pinned = false;
 
+  @NotNull(message = "La lista de id de programas no puede ser nula")
+  @Size(min = 0, message = "La lista de id de programas debe contener al menos un id o estar vacía")
+  private List<@Positive(message = "Los IDs de permisos deben ser positivos") Long> children;
 }
