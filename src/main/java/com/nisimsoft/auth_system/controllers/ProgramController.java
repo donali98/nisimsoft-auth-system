@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class ProgramController {
 
-  @Autowired private ProgramService programService;
+  @Autowired
+  private ProgramService programService;
 
   @PostMapping("/program")
-  public ResponseEntity<?> saveProgram(@Valid @RequestBody SaveProgramRequest request) {
+  public ResponseEntity<?> saveOrUpdateProgram(@Valid @RequestBody SaveProgramRequest request) {
 
     Program program = programService.saveOrUpdateProgram(request);
 
