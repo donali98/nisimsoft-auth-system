@@ -1,9 +1,11 @@
 package com.nisimsoft.auth_system.services;
 
-import com.nisimsoft.auth_system.dtos.requests.SaveProgramRequest;
+import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
 import com.nisimsoft.auth_system.entities.Program;
+import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.repositories.ProgramRepository;
+import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.utils.ProgramMapper;
 import java.util.HashSet;
 import java.util.List;
@@ -14,16 +16,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProgramService {
   private final ProgramRepository programRepository;
+  private final RoleRepository roleRepository;
 
-  public Program saveOrUpdateProgram(SaveProgramRequest request) {
+  public Program saveOrUpdateProgramWithRoles(SaveOrUpdateProgramWithRolesRequest request) {
 
     Long programId = request.getId();
     Long parentId = request.getParentId();
 
-    Program program =
-        programId != null
-            ? programRepository.findById(programId).orElseGet(Program::new)
-            : new Program();
+    Program program = programId != null
+        ? programRepository.findById(programId).orElseGet(Program::new)
+        : new Program();
 
     if (parentId != null) {
       Program parent = programRepository.findById(parentId).orElse(null);
@@ -36,16 +38,24 @@ public class ProgramService {
     program.setPinned(request.getPinned());
 
     List<Long> childIds = request.getChildren();
+    List<Long> roleIds = request.getRoles();
 
     // Buscar los hijos por ID
     List<Program> foundChilds = programRepository.findAllById(childIds);
+    // Buscar los roles por ID
+    List<Role> foundRoles = roleRepository.findAllById(roleIds);
 
     if (foundChilds.size() != request.getChildren().size()) {
       throw new IllegalArgumentException("Uno o más programas hijos no existen en el sistema");
     }
 
+    if (foundRoles.size() != request.getRoles().size()) {
+      throw new IllegalArgumentException("Uno o más roles no existen en el sistema");
+    }
+
     // Actualizar el set de permisos
     program.setChildren(new HashSet<>(foundChilds));
+    program.setRoles(new HashSet<>(foundRoles));
 
     return programRepository.save(program);
   }
