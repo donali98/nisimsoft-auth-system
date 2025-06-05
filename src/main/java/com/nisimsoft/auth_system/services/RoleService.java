@@ -19,12 +19,11 @@ public class RoleService {
   private final PermissionRepository permissionRepository;
 
   @Transactional
-  public Role saveOrUpdateRole(SaveRoleRequest request) {
+  public Role saveOrUpdateRoleWithPermissions(SaveRoleRequest request) {
 
-    Role role =
-        roleRepository
-            .findByName(request.getName())
-            .orElseGet(Role::new); // Si no existe, crea uno nuevo
+    Role role = roleRepository
+        .findByName(request.getName())
+        .orElseGet(Role::new); // Si no existe, crea uno nuevo
 
     role.setName(request.getName());
     role.setDescription(request.getDescription());

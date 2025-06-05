@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SaveProgramRequest {
+public class SaveOrUpdateProgramWithRolesRequest {
   private Long id = null;
 
   @NotBlank(message = "El nombre del programa es obligatorio")
@@ -25,4 +25,8 @@ public class SaveProgramRequest {
   @NotNull(message = "La lista de id de programas no puede ser nula")
   @Size(min = 0, message = "La lista de id de programas debe contener al menos un id o estar vacía")
   private List<@Positive(message = "Los IDs de permisos deben ser positivos") Long> children;
+
+  @NotNull(message = "La lista de roles no puede ser nula")
+  @Size(min = 0, message = "La lista de id de roles debe contener al menos un id o estar vacía")
+  private List<@Positive(message = "Los IDs de roles deben ser positivos") Long> roles;
 }

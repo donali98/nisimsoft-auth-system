@@ -19,27 +19,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class RoleController {
 
-  @Autowired private RoleService roleService;
+  @Autowired
+  private RoleService roleService;
 
   @PostMapping("/roles")
-  public ResponseEntity<?> saveOrUpdateRole(@RequestBody @Valid SaveRoleRequest request) {
+  public ResponseEntity<?> saveOrUpdateRoleWithPermissions(@RequestBody @Valid SaveRoleRequest request) {
 
-    Role savedRole = roleService.saveOrUpdateRole(request);
+    Role savedRole = roleService.saveOrUpdateRoleWithPermissions(request);
 
-    RolePermissionsResponseDTO responseDTO =
-        new RolePermissionsResponseDTO(
-            savedRole.getId(),
-            savedRole.getName(),
-            savedRole.getDescription(),
-            savedRole.getPermissions().stream()
-                .map(
-                    permission ->
-                        new PermissionResponseDTO(
-                            permission.getId(),
-                            permission.getName(),
-                            permission.getValue(),
-                            permission.getType()))
-                .toList());
+    RolePermissionsResponseDTO responseDTO = new RolePermissionsResponseDTO(
+        savedRole.getId(),
+        savedRole.getName(),
+        savedRole.getDescription(),
+        savedRole.getPermissions().stream()
+            .map(
+                permission -> new PermissionResponseDTO(
+                    permission.getId(),
+                    permission.getName(),
+                    permission.getValue(),
+                    permission.getType()))
+            .toList());
 
     return new Response("Rol guardado exitosamente", responseDTO, HttpStatus.CREATED);
   }

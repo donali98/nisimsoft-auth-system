@@ -1,6 +1,6 @@
 package com.nisimsoft.auth_system.controllers;
 
-import com.nisimsoft.auth_system.dtos.requests.SaveProgramRequest;
+import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
 import com.nisimsoft.auth_system.entities.Program;
 import com.nisimsoft.auth_system.responses.Response;
@@ -22,13 +22,15 @@ public class ProgramController {
   @Autowired
   private ProgramService programService;
 
-  @PostMapping("/program")
-  public ResponseEntity<?> saveOrUpdateProgram(@Valid @RequestBody SaveProgramRequest request) {
+  @PostMapping("/programs")
+  public ResponseEntity<?> saveOrUpdateProgramWithRoles(
+      @Valid @RequestBody SaveOrUpdateProgramWithRolesRequest request) {
 
-    Program program = programService.saveOrUpdateProgram(request);
+    Program program = programService.saveOrUpdateProgramWithRoles(request);
 
-    // Asegurar que los hijos estén cargados
+    // Asegurar que los hijos y los roles estén cargados
     program.getChildren().size();
+    program.getRoles().size();
 
     ProgramResponseDTO responseDTO = ProgramMapper.toDTO(program);
 
