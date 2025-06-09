@@ -66,7 +66,7 @@ public class AuthController {
         .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
         .toList();
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -91,7 +91,7 @@ public class AuthController {
 
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -117,7 +117,7 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
 
     UserResponseDTO userResponseDTO = new UserResponseDTO(
         user.getId(),

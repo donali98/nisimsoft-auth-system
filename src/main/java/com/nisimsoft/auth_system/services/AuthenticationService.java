@@ -30,6 +30,7 @@ public class AuthenticationService {
   private final CorporationRepository corporationRepository;
   private final RoleRepository roleRepository;
 
+  @Transactional
   public User registerUser(RegisterUserRequest request) {
 
     String email = request.getEmail();
@@ -86,13 +87,11 @@ public class AuthenticationService {
   @Transactional
   public User assignRoleToUser(AssignRolesToUserRequest request) {
 
-    User user =
-        userRepository
-            .findById(request.getId())
-            .orElseThrow(
-                () ->
-                    new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
+    User user = userRepository
+        .findById(request.getId())
+        .orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
 
     List<Long> roleIds = request.getRoles();
     // Buscar los permisos por ID

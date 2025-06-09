@@ -9,6 +9,8 @@ import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.utils.ProgramMapper;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -60,8 +62,8 @@ public class ProgramService {
     return programRepository.save(program);
   }
 
-  public List<ProgramResponseDTO> getProgramTree() {
-    List<Program> rootPrograms = programRepository.findAllByParentIsNull();
+  public List<ProgramResponseDTO> getProgramTree(Set<Role> userRoles) {
+    List<Program> rootPrograms = programRepository.findDistinctByRolesInAndParentIsNull(userRoles);
 
     return rootPrograms.stream().map(ProgramMapper::toDTO).toList();
   }
