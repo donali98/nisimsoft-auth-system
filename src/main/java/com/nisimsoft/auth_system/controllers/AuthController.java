@@ -4,7 +4,8 @@ import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithRolesDTO;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.AssignRoleToUserResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
@@ -62,11 +63,10 @@ public class AuthController {
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
 
     // Convertir corporaciones a resumen DTO
-    List<CorporationResponseDTO> corporationDTOs = safeCorporations.stream()
-        .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
-        .toList();
+    List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -91,7 +91,8 @@ public class AuthController {
 
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
-    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -117,7 +118,8 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree(user.getRoles());
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO userResponseDTO = new UserResponseDTO(
         user.getId(),
