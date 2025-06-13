@@ -3,8 +3,9 @@ package com.nisimsoft.auth_system.controllers;
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.UserFilterRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithRolesDTO;
+import com.nisimsoft.auth_system.dtos.responses.PaginatedResponse;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.AssignRoleToUserResponseDTO;
@@ -21,14 +22,19 @@ import com.nisimsoft.auth_system.services.ProgramService;
 import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
 import com.nisimsoft.auth_system.utils.JwtUtils;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,6 +71,7 @@ public class AuthController {
     // Convertir corporaciones a resumen DTO
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
 
+    @SuppressWarnings("unchecked")
     List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
         .getProgramTree(user.getRoles(), false);
 
@@ -90,7 +97,10 @@ public class AuthController {
     // request.getPassword());
 
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
+
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
+
+    @SuppressWarnings("unchecked")
     List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
         .getProgramTree(user.getRoles(), false);
 
@@ -118,6 +128,7 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
+    @SuppressWarnings("unchecked")
     List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
         .getProgramTree(user.getRoles(), false);
 
@@ -150,6 +161,32 @@ public class AuthController {
             .toList());
 
     return new Response("Rol asignado al usuario exitosamente", responseDTO, HttpStatus.CREATED);
+  }
+
+  @GetMapping("/users")
+  public ResponseEntity<?> getUsers(@ModelAttribute UserFilterRequest request) {
+    Map<String, Object> filters = new HashMap<>();
+
+    if (request.getName() != null) {
+      filters.put("name", request.getName());
+    }
+    if (request.getUsername() != null) {
+      filters.put("username", request.getUsername());
+    }
+    if (request.getEmail() != null) {
+      filters.put("email", request.getEmail());
+    }
+
+    Page<User> result = authenticationService.getUsers(
+        request.getPage(),
+        request.getSize(),
+        request.getSearch(),
+        request.getSortColumn(),
+        request.getSortOrder(),
+        filters);
+
+    return new Response("Usuarios obtenidos exitosamente", PaginatedResponse.fromPage(result), HttpStatus.OK);
+
   }
 
   private AuthenticationProvider getAuthenticationProvider() {
