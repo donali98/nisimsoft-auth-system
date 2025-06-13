@@ -1,7 +1,6 @@
 package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithRolesDTO;
 import com.nisimsoft.auth_system.entities.Program;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.repositories.ProgramRepository;
