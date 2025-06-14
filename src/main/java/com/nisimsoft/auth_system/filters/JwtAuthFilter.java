@@ -28,7 +28,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-  @Autowired private final JwtUtils jwtUtils;
+  @Autowired
+  private final JwtUtils jwtUtils;
 
   private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -60,10 +61,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           // System.out.println("✅ Tenant seteado desde token: " + corpId);
           // TenantContext.setTenant(corpId);
 
-          UsernamePasswordAuthenticationToken authToken =
-              new UsernamePasswordAuthenticationToken(email, null, null);
+          UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null, null);
+
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
           SecurityContextHolder.getContext().setAuthentication(authToken);
+
         } else {
           System.out.println("⚠️ Token sin corpId válido. Se usará la base por defecto.");
         }

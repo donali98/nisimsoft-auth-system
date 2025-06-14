@@ -1,7 +1,6 @@
 package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
 import com.nisimsoft.auth_system.entities.Program;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.repositories.ProgramRepository;
@@ -9,6 +8,8 @@ import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.utils.ProgramMapper;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -60,9 +61,13 @@ public class ProgramService {
     return programRepository.save(program);
   }
 
-  public List<ProgramResponseDTO> getProgramTree() {
-    List<Program> rootPrograms = programRepository.findAllByParentIsNull();
+  public List<?> getProgramTree(Set<Role> userRoles, boolean includeRoles) {
+    List<Program> rootPrograms = programRepository.findDistinctByRolesInAndParentIsNull(userRoles);
 
-    return rootPrograms.stream().map(ProgramMapper::toDTO).toList();
+    if (includeRoles) {
+      return rootPrograms.stream().map(ProgramMapper::toDTOWithRoles).toList();
+    } else {
+      return rootPrograms.stream().map(ProgramMapper::toDTOWithoutRoles).toList();
+    }
   }
 }

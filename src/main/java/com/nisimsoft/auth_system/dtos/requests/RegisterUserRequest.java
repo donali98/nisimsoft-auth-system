@@ -3,7 +3,7 @@ package com.nisimsoft.auth_system.dtos.requests;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+// import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,9 +18,7 @@ public class RegisterUserRequest {
   @NotBlank(message = "El nombre es obligatorio")
   @Size(min = 3, message = "El nombre debe tener al menos 3 caracteres")
   @Size(max = 50, message = "El nombre no puede exceder los 50 caracteres")
-  @Pattern(
-      regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ]+([\\s-][A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$",
-      message = "El nombre solo puede contener letras, espacios y guiones")
+  @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ]+([\\s-][A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$", message = "El nombre solo puede contener letras, espacios y guiones")
   private String name;
 
   @NotBlank(message = "El nombre de usuario es obligatorio")
@@ -40,7 +38,7 @@ public class RegisterUserRequest {
   @NotBlank(message = "La confirmación de contraseña es obligatoria")
   private String confirmPassword;
 
-  @NotEmpty(message = "Debe asignarse al menos una corporación")
+  // @NotEmpty(message = "Debe asignarse al menos una corporación")
   private Set<@NotNull(message = "El ID de la corporación no puede ser nulo") Long> corporationIds;
 
   // Validación personalizada para coincidencia de contraseñas

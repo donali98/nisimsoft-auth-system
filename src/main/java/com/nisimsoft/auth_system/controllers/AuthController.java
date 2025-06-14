@@ -4,8 +4,10 @@ import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.UserFilterRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
+import com.nisimsoft.auth_system.dtos.responses.PaginatedResponse;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.AssignRoleToUserResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
@@ -21,14 +23,19 @@ import com.nisimsoft.auth_system.services.ProgramService;
 import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
 import com.nisimsoft.auth_system.utils.JwtUtils;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +65,9 @@ public class AuthController {
     // Actualizar usuario
     User user = authenticationService.updateUser(request);
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    @SuppressWarnings("unchecked")
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -83,11 +92,11 @@ public class AuthController {
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
 
     // Convertir corporaciones a resumen DTO
-    List<CorporationResponseDTO> corporationDTOs = safeCorporations.stream()
-        .map(corp -> new CorporationResponseDTO(corp.getId(), corp.getName()))
-        .toList();
+    List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    @SuppressWarnings("unchecked")
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -111,8 +120,12 @@ public class AuthController {
     // request.getPassword());
 
     Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
+
     List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+
+    @SuppressWarnings("unchecked")
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO responseDTO = new UserResponseDTO(
         user.getId(),
@@ -138,7 +151,9 @@ public class AuthController {
 
     String token = jwtUtils.generateToken(user.getEmail(), request.getCorpId().toString());
 
-    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+    @SuppressWarnings("unchecked")
+    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
+        .getProgramTree(user.getRoles(), false);
 
     UserResponseDTO userResponseDTO = new UserResponseDTO(
         user.getId(),
@@ -169,6 +184,32 @@ public class AuthController {
             .toList());
 
     return new Response("Rol asignado al usuario exitosamente", responseDTO, HttpStatus.CREATED);
+  }
+
+  @GetMapping("/users")
+  public ResponseEntity<?> getUsers(@ModelAttribute UserFilterRequest request) {
+    Map<String, Object> filters = new HashMap<>();
+
+    if (request.getName() != null) {
+      filters.put("name", request.getName());
+    }
+    if (request.getUsername() != null) {
+      filters.put("username", request.getUsername());
+    }
+    if (request.getEmail() != null) {
+      filters.put("email", request.getEmail());
+    }
+
+    Page<User> result = authenticationService.getUsers(
+        request.getPage(),
+        request.getSize(),
+        request.getSearch(),
+        request.getSortColumn(),
+        request.getSortOrder(),
+        filters);
+
+    return new Response("Usuarios obtenidos exitosamente", PaginatedResponse.fromPage(result), HttpStatus.OK);
+
   }
 
   private AuthenticationProvider getAuthenticationProvider() {
