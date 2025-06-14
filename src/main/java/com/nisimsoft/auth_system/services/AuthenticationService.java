@@ -2,6 +2,7 @@ package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
 import com.nisimsoft.auth_system.entities.Corporation;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.entities.User;
@@ -14,6 +15,7 @@ import com.nisimsoft.auth_system.services.providers.AuthenticationProvider;
 import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -56,6 +58,25 @@ public class AuthenticationService {
     return userRepository.save(user);
   }
 
+  public User updateUser(UpdateUserRequest request) {
+
+    String email = request.getEmail();
+    Optional<User> user = userRepository.findByEmail(email);
+
+    if (!user.isPresent()) {
+      throw new EmailAlreadyExistsException("No se encontró un usuario con ese email");
+    }
+
+    User existingUser = user.get();
+
+    existingUser.setName(request.getName());
+    existingUser.setUsername(request.getUsername());
+    existingUser.setEmail(email);
+    existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    return userRepository.save(existingUser);
+  }
+
   public User getUserByEmailOrThrow(String email) {
     return userRepository
         .findByEmail(email)
@@ -86,13 +107,11 @@ public class AuthenticationService {
   @Transactional
   public User assignRoleToUser(AssignRolesToUserRequest request) {
 
-    User user =
-        userRepository
-            .findById(request.getId())
-            .orElseThrow(
-                () ->
-                    new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
+    User user = userRepository
+        .findById(request.getId())
+        .orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Usuario no encontrado")); // Si no existe
 
     List<Long> roleIds = request.getRoles();
     // Buscar los permisos por ID

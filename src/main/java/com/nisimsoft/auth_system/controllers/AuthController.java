@@ -3,6 +3,7 @@ package com.nisimsoft.auth_system.controllers;
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
@@ -50,6 +51,26 @@ public class AuthController {
 
   @Value("${app.auth.provider}")
   private String activeAuthProvider;
+
+  @PostMapping("/users")
+  public ResponseEntity<?> update(@Valid @RequestBody UpdateUserRequest request) {
+
+    // Actualizar usuario
+    User user = authenticationService.updateUser(request);
+
+    List<ProgramResponseDTO> programTree = programService.getProgramTree();
+
+    UserResponseDTO responseDTO = new UserResponseDTO(
+        user.getId(),
+        user.getName(),
+        user.getUsername(),
+        user.getEmail(),
+        mapCorporations(user.getCorporations()),
+        mapRoles(user.getRoles()),
+        programTree);
+
+    return new Response("Usuario actualizado exitosamente", responseDTO, HttpStatus.CREATED);
+  }
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequest request) {
