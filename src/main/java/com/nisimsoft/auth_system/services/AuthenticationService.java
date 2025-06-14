@@ -71,18 +71,18 @@ public class AuthenticationService {
 
   public User updateUser(UpdateUserRequest request) {
 
-    String email = request.getEmail();
-    Optional<User> user = userRepository.findByEmail(email);
+    Long userId = request.getId();
+    Optional<User> user = userRepository.findById(userId);
 
     if (!user.isPresent()) {
-      throw new EmailAlreadyExistsException("No se encontró un usuario con ese email");
+      throw new EmailAlreadyExistsException("No se encontró el usuario con ese id");
     }
 
     User existingUser = user.get();
 
     existingUser.setName(request.getName());
     existingUser.setUsername(request.getUsername());
-    existingUser.setEmail(email);
+    existingUser.setEmail(request.getEmail());
     existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
 
     return userRepository.save(existingUser);

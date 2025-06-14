@@ -1,6 +1,9 @@
 package com.nisimsoft.auth_system.dtos.requests;
 
+import com.nisimsoft.auth_system.annotations.ExistsInDatabase;
+
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -8,6 +11,10 @@ import lombok.Data;
 
 @Data
 public class UpdateUserRequest {
+
+    @Min(value = 1, message = "El id del usaurio debe ser mayor que 0")
+    @ExistsInDatabase(table = "ns_users", column = "id", entityName = "usuario")
+    private Long id;
 
     @NotNull(message = "El nombre es obligatorio")
     @Size(min = 3, message = "El nombre debe tener al menos 3 caracteres")
