@@ -83,7 +83,12 @@ public class AuthenticationService {
     existingUser.setName(request.getName());
     existingUser.setUsername(request.getUsername());
     existingUser.setEmail(request.getEmail());
-    existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    String password = request.getPassword();
+
+    if (password != null) {
+      existingUser.setPassword(passwordEncoder.encode(password));
+    }
 
     return userRepository.save(existingUser);
   }

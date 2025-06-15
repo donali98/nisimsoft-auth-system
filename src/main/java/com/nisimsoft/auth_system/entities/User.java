@@ -39,23 +39,21 @@ public class User {
   @Email(message = "Formato de email inválido")
   private String email;
 
+  @Column(nullable = true)
   @NotBlank(message = "La contraseña es obligatoria")
   @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
   private String password;
 
+  @Column(nullable = false)
+  private boolean isActive = true;
+
   @ManyToMany
-  @JoinTable(
-      name = "ns_corp_users",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "corp_id"))
+  @JoinTable(name = "ns_corp_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "corp_id"))
   @JsonIgnoreProperties("users") // Evita recursividad al serializar
   private Set<Corporation> corporations = new HashSet<>();
 
   @ManyToMany
-  @JoinTable(
-      name = "ns_role_users",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  @JoinTable(name = "ns_role_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
   @JsonIgnoreProperties("roles") // Evita recursividad al serializar
   private Set<Role> roles = new HashSet<>();
 }

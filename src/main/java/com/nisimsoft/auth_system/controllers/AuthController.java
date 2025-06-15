@@ -201,6 +201,8 @@ public class AuthController {
       filters.put("email", request.getEmail());
     }
 
+    filters.put("isActive", request.isActive());
+
     Page<User> result = authenticationService.getUsers(
         request.getPage(),
         request.getSize(),

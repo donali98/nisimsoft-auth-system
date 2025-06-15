@@ -31,7 +31,6 @@ public class UpdateUserRequest {
     @Email(message = "Formato de email inválido")
     private String email;
 
-    @NotNull(message = "La contraseña es obligatoria")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     @Size(max = 15, message = "La contraseña no puede exceder los 20 caracteres")
     private String password;

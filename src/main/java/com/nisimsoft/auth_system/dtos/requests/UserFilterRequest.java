@@ -9,4 +9,5 @@ public class UserFilterRequest extends GlobalFilterRequest {
     private String name;
     private String username;
     private String email;
+    private boolean isActive;
 }
