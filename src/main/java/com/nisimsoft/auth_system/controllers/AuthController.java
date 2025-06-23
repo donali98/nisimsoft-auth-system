@@ -2,7 +2,7 @@ package com.nisimsoft.auth_system.controllers;
 
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
-import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.UserFilterRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
@@ -82,18 +82,11 @@ public class AuthController {
     return new Response("Usuario actualizado exitosamente", responseDTO, HttpStatus.CREATED);
   }
 
-  @PostMapping("/register")
-  public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequest request) {
+  @PostMapping("/users")
+  public ResponseEntity<?> saveOrUpdateUser(@Valid @RequestBody SaveOrUpdateUserRequest request) {
 
     // Registrar usuario
-    User user = authenticationService.registerUser(request);
-
-    // IMPORTANTE: crea una copia segura del set (para evitar que JPA lo gestione al
-    // recorrer)
-    Set<Corporation> safeCorporations = new HashSet<>(user.getCorporations());
-
-    // Convertir corporaciones a resumen DTO
-    List<CorporationResponseDTO> corporationDTOs = mapCorporations(safeCorporations);
+    User user = authenticationService.saveOrUpdateUser(request);
 
     @SuppressWarnings("unchecked")
     List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
@@ -104,7 +97,7 @@ public class AuthController {
         user.getName(),
         user.getUsername(),
         user.getEmail(),
-        corporationDTOs,
+        mapCorporations(user.getCorporations()),
         mapRoles(user.getRoles()),
         programTree);
 

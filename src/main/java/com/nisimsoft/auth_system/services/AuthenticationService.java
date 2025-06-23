@@ -1,7 +1,7 @@
 package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
-import com.nisimsoft.auth_system.dtos.requests.RegisterUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
 import com.nisimsoft.auth_system.entities.Corporation;
 import com.nisimsoft.auth_system.entities.Role;
@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -43,28 +42,43 @@ public class AuthenticationService {
   private final RoleRepository roleRepository;
 
   @Transactional
-  public User registerUser(RegisterUserRequest request) {
+  public User saveOrUpdateUser(SaveOrUpdateUserRequest request) {
 
-    String email = request.getEmail();
+    Long userId = request.getId();
 
     // Verificar si el email ya existe
-    if (userRepository.findByEmail(email).isPresent()) {
-      throw new EmailAlreadyExistsException("El email ya está registrado");
+    if (userId != null && userRepository.findById(userId).isPresent()) {
+      throw new EmailAlreadyExistsException("El usuario con ese correo ya está registrado");
     }
 
-    User user = new User();
+    if (request.getPassword() != null && !request.getPassword().equals(request.getConfirmPassword())) {
+      throw new IllegalArgumentException("Las contraseñas no coinciden");
+    }
+
+    User user = userId != null
+        ? userRepository.findById(userId).orElseGet(User::new)
+        : new User();
+
     user.setName(request.getName());
     user.setUsername(request.getUsername());
-    user.setEmail(email);
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
+    user.setEmail(request.getEmail());
 
-    Set<Long> corpIds = request.getCorporationIds();
+    if (request.getPassword() != null)
+      user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-    if (corpIds != null && !corpIds.isEmpty()) {
+    List<Corporation> foundCorps = corporationRepository.findAllById(request.getCorporationIds());
+    List<Role> foundRoles = roleRepository.findAllById(request.getRoleIds());
 
-      Set<Corporation> corporations = new HashSet<>(corporationRepository.findAllById(corpIds));
-      user.setCorporations(corporations);
+    if (foundCorps.size() != request.getCorporationIds().size()) {
+      throw new IllegalArgumentException("Una o más corporaciones no existen en el sistema");
     }
+
+    if (foundRoles.size() != request.getRoleIds().size()) {
+      throw new IllegalArgumentException("Uno o más roles no existen en el sistema");
+    }
+
+    user.setCorporations(new HashSet<>(foundCorps));
+    user.setRoles(new HashSet<>(foundRoles));
 
     return userRepository.save(user);
   }
