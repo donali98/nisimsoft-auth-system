@@ -27,6 +27,7 @@ import lombok.ToString;
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+
 public class Program {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,10 +58,7 @@ public class Program {
   private Set<Program> children = new HashSet<>();
 
   @ManyToMany
-  @JoinTable(
-      name = "ns_program_role",
-      joinColumns = @JoinColumn(name = "program_id"),
-      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  @JoinTable(name = "ns_program_role", joinColumns = @JoinColumn(name = "program_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
   @JsonIgnoreProperties("roles") // Evita recursividad al serializar
   private Set<Role> roles = new HashSet<>();
 }
