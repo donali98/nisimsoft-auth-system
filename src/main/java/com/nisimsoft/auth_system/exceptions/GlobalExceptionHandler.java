@@ -10,6 +10,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,11 +27,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NoHandlerFoundException.class)
   public ResponseEntity<ErrorResponse> handleNotFound(
       NoHandlerFoundException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Ruta no encontrada",
-            "La ruta solicitada no existe: " + ex.getRequestURL(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Ruta no encontrada",
+        "La ruta solicitada no existe: " + ex.getRequestURL(),
+        getRequestPath(request));
     return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
   }
 
@@ -41,24 +41,21 @@ public class GlobalExceptionHandler {
     Throwable cause = ex.getRootCause();
 
     if (cause instanceof ConstraintViolationException constraintEx) {
-      String errorMessage =
-          constraintEx.getConstraintViolations().stream()
-              .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
-              .collect(Collectors.joining(", "));
+      String errorMessage = constraintEx.getConstraintViolations().stream()
+          .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+          .collect(Collectors.joining(", "));
 
-      ErrorResponse response =
-          new ErrorResponse(
-              "Error de validación al realizar operación", errorMessage, getRequestPath(request));
+      ErrorResponse response = new ErrorResponse(
+          "Error de validación al realizar operación", errorMessage, getRequestPath(request));
 
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     // Si no es ConstraintViolationException, responde con 500 genérico
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error en la transacción",
-            "No se pudo completar la operación: " + ex.getMessage(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error en la transacción",
+        "No se pudo completar la operación: " + ex.getMessage(),
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -76,31 +73,27 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationErrors(
       MethodArgumentNotValidException ex, WebRequest request) {
-    String errorMessage =
-        ex.getBindingResult().getFieldErrors().stream()
-            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-            .collect(Collectors.joining(", "));
+    String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+        .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+        .collect(Collectors.joining(", "));
 
-    ErrorResponse response =
-        new ErrorResponse("Error de validación", errorMessage, getRequestPath(request));
+    ErrorResponse response = new ErrorResponse("Error de validación", errorMessage, getRequestPath(request));
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(EmailAlreadyExistsException.class)
   public ResponseEntity<ErrorResponse> handleEmailExists(
       EmailAlreadyExistsException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse("Error de registro", ex.getMessage(), getRequestPath(request));
+    ErrorResponse response = new ErrorResponse("Error de registro", ex.getMessage(), getRequestPath(request));
     return new ResponseEntity<>(response, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error interno",
-            "Ocurrió un error inesperado: " + ex.getMessage(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error interno",
+        "Ocurrió un error inesperado: " + ex.getMessage(),
+        getRequestPath(request));
     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -108,11 +101,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUncategorizedSQLException(
       org.springframework.jdbc.UncategorizedSQLException ex, WebRequest request) {
 
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error al ejecutar SQL",
-            "La operación de base de datos falló: " + ex.getMostSpecificCause().getMessage(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error al ejecutar SQL",
+        "La operación de base de datos falló: " + ex.getMostSpecificCause().getMessage(),
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST); // o 422 si lo prefieres
   }
@@ -120,12 +112,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(org.springframework.jdbc.BadSqlGrammarException.class)
   public ResponseEntity<ErrorResponse> handleBadSqlGrammar(
       BadSqlGrammarException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error de sintaxis SQL",
-            "Verifica la sintaxis de la consulta o el nombre de las tablas/columnas: "
-                + ex.getMostSpecificCause().getMessage(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error de sintaxis SQL",
+        "Verifica la sintaxis de la consulta o el nombre de las tablas/columnas: "
+            + ex.getMostSpecificCause().getMessage(),
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
@@ -133,11 +124,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(org.springframework.dao.DuplicateKeyException.class)
   public ResponseEntity<ErrorResponse> handleDuplicateKey(
       DuplicateKeyException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Valor duplicado",
-            "Ya existe un registro con el valor que intentas guardar.",
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Valor duplicado",
+        "Ya existe un registro con el valor que intentas guardar.",
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.CONFLICT);
   }
@@ -145,12 +135,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
   public ResponseEntity<ErrorResponse> handleDataIntegrity(
       DataIntegrityViolationException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Violación de integridad de datos",
-            "La operación no pudo completarse por una restricción en la base de datos: "
-                + ex.getMostSpecificCause().getMessage(),
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Violación de integridad de datos",
+        "La operación no pudo completarse por una restricción en la base de datos: "
+            + ex.getMostSpecificCause().getMessage(),
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
@@ -159,11 +148,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleInvalidDataAccessApiUsage(
       InvalidDataAccessApiUsageException ex, WebRequest request) {
 
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error en la operación con base de datos",
-            ex.getMessage(), // o un mensaje personalizado si preferís
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error en la operación con base de datos",
+        ex.getMessage(), // o un mensaje personalizado si preferís
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
@@ -172,8 +160,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleIllegalArgument(
       IllegalArgumentException ex, WebRequest request) {
 
-    ErrorResponse response =
-        new ErrorResponse("Parámetros inválidos", ex.getMessage(), getRequestPath(request));
+    ErrorResponse response = new ErrorResponse("Parámetros inválidos", ex.getMessage(), getRequestPath(request));
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
@@ -181,13 +168,24 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(ResponseStatusException.class)
   public ResponseEntity<ErrorResponse> handleResponseStatusException(
       ResponseStatusException ex, WebRequest request) {
-    ErrorResponse response =
-        new ErrorResponse(
-            "Error de aplicación",
-            ex.getReason(), // Usa el mensaje que diste al lanzar la excepción
-            getRequestPath(request));
+    ErrorResponse response = new ErrorResponse(
+        "Error de aplicación",
+        ex.getReason(), // Usa el mensaje que diste al lanzar la excepción
+        getRequestPath(request));
 
     return new ResponseEntity<>(response, ex.getStatusCode());
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex, WebRequest request) {
+
+    ErrorResponse response = new ErrorResponse(
+        "Error de formato JSON",
+        "El cuerpo de la solicitud tiene un formato inválido o no coincide con los tipos esperados.",
+        getRequestPath(request));
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
   // Método auxiliar para obtener la ruta de la solicitud
