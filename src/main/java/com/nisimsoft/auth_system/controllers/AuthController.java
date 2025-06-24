@@ -60,28 +60,6 @@ public class AuthController {
   @Value("${app.auth.provider}")
   private String activeAuthProvider;
 
-  @PutMapping("/users")
-  public ResponseEntity<?> update(@Valid @RequestBody UpdateUserRequest request) {
-
-    // Actualizar usuario
-    User user = authenticationService.updateUser(request);
-
-    @SuppressWarnings("unchecked")
-    List<ProgramResponseWithoutRolesDTO> programTree = (List<ProgramResponseWithoutRolesDTO>) programService
-        .getProgramTree(user.getRoles(), false);
-
-    UserResponseDTO responseDTO = new UserResponseDTO(
-        user.getId(),
-        user.getName(),
-        user.getUsername(),
-        user.getEmail(),
-        mapCorporations(user.getCorporations()),
-        mapRoles(user.getRoles()),
-        programTree);
-
-    return new Response("Usuario actualizado exitosamente", responseDTO, HttpStatus.CREATED);
-  }
-
   @PostMapping("/users")
   public ResponseEntity<?> saveOrUpdateUser(@Valid @RequestBody SaveOrUpdateUserRequest request) {
 
