@@ -46,11 +46,6 @@ public class AuthenticationService {
 
     Long userId = request.getId();
 
-    // Verificar si el email ya existe
-    if (userId != null && userRepository.findById(userId).isPresent()) {
-      throw new EmailAlreadyExistsException("El usuario con ese correo ya está registrado");
-    }
-
     if (request.getPassword() != null && !request.getPassword().equals(request.getConfirmPassword())) {
       throw new IllegalArgumentException("Las contraseñas no coinciden");
     }

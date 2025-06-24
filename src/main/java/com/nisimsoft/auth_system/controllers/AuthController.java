@@ -101,7 +101,11 @@ public class AuthController {
         mapRoles(user.getRoles()),
         programTree);
 
-    return new Response("Usuario registrado exitosamente", responseDTO, HttpStatus.CREATED);
+    String responseMessage = user.getId() != null
+        ? "Usuario actualizado exitosamente"
+        : "Usuario registrado exitosamente";
+
+    return new Response(responseMessage, responseDTO, HttpStatus.CREATED);
   }
 
   @PostMapping("/verify-user")
