@@ -1,6 +1,5 @@
 package com.nisimsoft.auth_system.controllers;
 
-import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.UserFilterRequest;
@@ -8,7 +7,6 @@ import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
 import com.nisimsoft.auth_system.dtos.responses.PaginatedResponse;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
-import com.nisimsoft.auth_system.dtos.responses.user.AssignRoleToUserResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.UserResponseDTO;
 import com.nisimsoft.auth_system.entities.Corporation;
@@ -140,24 +138,6 @@ public class AuthController {
 
     return new Response(
         "Autenticación exitosa", Map.of("user", userResponseDTO, "token", token), HttpStatus.OK);
-  }
-
-  @PostMapping("/assign-roles-to-user")
-  public ResponseEntity<?> assignRoleToUser(@RequestBody @Valid AssignRolesToUserRequest request) {
-
-    User savedUser = authenticationService.assignRoleToUser(request);
-
-    AssignRoleToUserResponseDTO responseDTO = new AssignRoleToUserResponseDTO(
-        savedUser.getId(),
-        savedUser.getName(),
-        savedUser.getUsername(),
-        savedUser.getEmail(),
-        savedUser.getRoles().stream()
-            .map(
-                role -> new RoleResponseDTO(role.getId(), role.getName(), role.getDescription()))
-            .toList());
-
-    return new Response("Rol asignado al usuario exitosamente", responseDTO, HttpStatus.CREATED);
   }
 
   @GetMapping("/users")
