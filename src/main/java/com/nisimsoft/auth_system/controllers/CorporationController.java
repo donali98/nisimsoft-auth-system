@@ -66,7 +66,19 @@ public class CorporationController {
                 request.getSortOrder(),
                 filters);
 
-        return new Response("Corporaciones obtenidos exitosamente", PaginatedResponse.fromPage(result), HttpStatus.OK);
+        // Usar el DTO ubicado en responses/corporation explícitamente
+        Page<com.nisimsoft.auth_system.dtos.responses.corporation.CorporationResponseDTO> responsePageAlt = result
+                .map(corp -> new com.nisimsoft.auth_system.dtos.responses.corporation.CorporationResponseDTO(
+                        corp.getId(),
+                        corp.getName(),
+                        corp.getDbName(),
+                        corp.getUsername(),
+                        corp.getLogo(),
+                        corp.getHost(),
+                        corp.getDbEngine()));
+
+        return new Response("Corporaciones obtenidos exitosamente", PaginatedResponse.fromPage(responsePageAlt),
+                HttpStatus.OK);
 
     }
 
