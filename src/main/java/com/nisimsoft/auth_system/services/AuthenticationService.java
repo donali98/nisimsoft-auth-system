@@ -2,12 +2,11 @@ package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.AssignRolesToUserRequest;
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateUserRequest;
-import com.nisimsoft.auth_system.dtos.requests.UpdateUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.ToggleUserStatusRequest;
 import com.nisimsoft.auth_system.entities.Corporation;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.entities.User;
 import com.nisimsoft.auth_system.exceptions.auth.AuthenticationFailedException;
-import com.nisimsoft.auth_system.exceptions.auth.EmailAlreadyExistsException;
 import com.nisimsoft.auth_system.repositories.CorporationRepository;
 import com.nisimsoft.auth_system.repositories.RoleRepository;
 import com.nisimsoft.auth_system.repositories.UserRepository;
@@ -18,7 +17,6 @@ import jakarta.transaction.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -78,28 +78,50 @@ public class AuthenticationService {
     return userRepository.save(user);
   }
 
-  public User updateUser(UpdateUserRequest request) {
+  public Page<User> getUsers(
+      int pageNumber,
+      int pageSize,
+      String searchWord,
+      String sortColumn,
+      String sortOrder,
+      Map<String, Object> filters) {
 
-    Long userId = request.getId();
-    Optional<User> user = userRepository.findById(userId);
+    Sort sort = Sort.unsorted();
 
-    if (!user.isPresent()) {
-      throw new EmailAlreadyExistsException("No se encontró el usuario con ese id");
+    if (sortColumn != null && sortOrder != null) {
+      sort = Sort.by(Sort.Direction.fromString(sortOrder), sortColumn);
     }
 
-    User existingUser = user.get();
+    Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, sort);
 
-    existingUser.setName(request.getName());
-    existingUser.setUsername(request.getUsername());
-    existingUser.setEmail(request.getEmail());
+    Specification<User> spec = UserSpecification.build(searchWord, filters);
 
-    String password = request.getPassword();
+    return userRepository.findAll(spec, pageable);
+  }
 
-    if (password != null) {
-      existingUser.setPassword(passwordEncoder.encode(password));
+  @Transactional
+  public User toggleUserStatus(ToggleUserStatusRequest request) {
+    User targetUser = getUserByIdOrThrow(request.getId());
+    User currentUser = getCurrentAuthenticatedUser();
+
+    if (targetUser.getId().equals(currentUser.getId())) {
+      throw new IllegalArgumentException("No puedes deshabilitar tu propio usuario.");
     }
 
-    return userRepository.save(existingUser);
+    targetUser.setActive(request.getIsActive());
+    return userRepository.save(targetUser);
+  }
+
+  public User getCurrentAuthenticatedUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new IllegalStateException("No hay usuario autenticado en el contexto");
+    }
+
+    String email = (String) authentication.getPrincipal(); // <- porque tú pusiste el email como principal
+
+    return getUserByEmailOrThrow(email);
   }
 
   public User getUserByEmailOrThrow(String email) {
@@ -151,26 +173,4 @@ public class AuthenticationService {
 
     return userRepository.save(user);
   }
-
-  public Page<User> getUsers(
-      int pageNumber,
-      int pageSize,
-      String searchWord,
-      String sortColumn,
-      String sortOrder,
-      Map<String, Object> filters) {
-
-    Sort sort = Sort.unsorted();
-
-    if (sortColumn != null && sortOrder != null) {
-      sort = Sort.by(Sort.Direction.fromString(sortOrder), sortColumn);
-    }
-
-    Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, sort);
-
-    Specification<User> spec = UserSpecification.build(searchWord, filters);
-
-    return userRepository.findAll(spec, pageable);
-  }
-
 }

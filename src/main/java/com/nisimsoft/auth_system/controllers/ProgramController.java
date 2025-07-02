@@ -1,7 +1,7 @@
 package com.nisimsoft.auth_system.controllers;
 
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
-import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithRolesDTO;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.entities.Program;
 import com.nisimsoft.auth_system.responses.Response;
 import com.nisimsoft.auth_system.services.ProgramService;
@@ -32,7 +32,7 @@ public class ProgramController {
     program.getChildren().size();
     program.getRoles().size();
 
-    ProgramResponseWithRolesDTO responseDTO = ProgramMapper.toDTOWithRoles(program);
+    ProgramResponseWithoutRolesDTO responseDTO = ProgramMapper.toDTOWithoutRoles(program);
 
     return new Response("Programa guardado exitosamente", responseDTO, HttpStatus.CREATED);
   }

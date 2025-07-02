@@ -2,12 +2,14 @@ package com.nisimsoft.auth_system.controllers;
 
 import com.nisimsoft.auth_system.dtos.requests.LoginRequest;
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateUserRequest;
+import com.nisimsoft.auth_system.dtos.requests.ToggleUserStatusRequest;
 import com.nisimsoft.auth_system.dtos.requests.UserFilterRequest;
 import com.nisimsoft.auth_system.dtos.requests.VerifyUserRequest;
 import com.nisimsoft.auth_system.dtos.responses.PaginatedResponse;
 import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesDTO;
 import com.nisimsoft.auth_system.dtos.responses.roles.RoleResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.CorporationResponseDTO;
+import com.nisimsoft.auth_system.dtos.responses.user.EnableDisableUserResponseDTO;
 import com.nisimsoft.auth_system.dtos.responses.user.UserResponseDTO;
 import com.nisimsoft.auth_system.entities.Corporation;
 import com.nisimsoft.auth_system.entities.Role;
@@ -31,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,9 +76,10 @@ public class AuthController {
         user.getEmail(),
         mapCorporations(user.getCorporations()),
         mapRoles(user.getRoles()),
-        programTree);
+        programTree,
+        user.isActive());
 
-    String responseMessage = user.getId() != null
+    String responseMessage = request.getId() != null
         ? "Usuario actualizado exitosamente"
         : "Usuario registrado exitosamente";
 
@@ -106,7 +110,8 @@ public class AuthController {
         user.getEmail(),
         corporationDTOs,
         mapRoles(user.getRoles()),
-        programTree);
+        programTree,
+        user.isActive());
 
     return new Response("Usuario encontrado exitosamente", responseDTO, HttpStatus.OK);
   }
@@ -134,7 +139,8 @@ public class AuthController {
         user.getEmail(),
         mapCorporations(user.getCorporations()),
         mapRoles(user.getRoles()),
-        programTree);
+        programTree,
+        user.isActive());
 
     return new Response(
         "Autenticación exitosa", Map.of("user", userResponseDTO, "token", token), HttpStatus.OK);
@@ -166,6 +172,24 @@ public class AuthController {
 
     return new Response("Usuarios obtenidos exitosamente", PaginatedResponse.fromPage(result), HttpStatus.OK);
 
+  }
+
+  @DeleteMapping("/users")
+  public ResponseEntity<?> toggleUserStatus(@Valid @RequestBody ToggleUserStatusRequest request) {
+    User updatedUser = authenticationService.toggleUserStatus(request);
+
+    String message = updatedUser.isActive()
+        ? "Usuario activado exitosamente"
+        : "Usuario desactivado exitosamente";
+
+    return new Response(message,
+        new EnableDisableUserResponseDTO(
+            updatedUser.getId(),
+            updatedUser.getName(),
+            updatedUser.getUsername(),
+            updatedUser.getEmail(),
+            updatedUser.isActive()),
+        HttpStatus.OK);
   }
 
   private AuthenticationProvider getAuthenticationProvider() {

@@ -66,8 +66,9 @@ public class ProgramService {
 
     if (includeRoles) {
       return rootPrograms.stream().map(ProgramMapper::toDTOWithRoles).toList();
-    } else {
-      return rootPrograms.stream().map(ProgramMapper::toDTOWithoutRoles).toList();
     }
+
+    return rootPrograms.stream().map(ProgramMapper::toDTOWithoutRoles).toList();
+
   }
 }
