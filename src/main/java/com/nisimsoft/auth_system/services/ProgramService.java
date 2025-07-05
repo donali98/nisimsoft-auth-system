@@ -1,6 +1,8 @@
 package com.nisimsoft.auth_system.services;
 
 import com.nisimsoft.auth_system.dtos.requests.SaveOrUpdateProgramWithRolesRequest;
+import com.nisimsoft.auth_system.dtos.responses.program.ProgramResponseWithoutRolesLoginDTO;
+import com.nisimsoft.auth_system.entities.Permission;
 import com.nisimsoft.auth_system.entities.Program;
 import com.nisimsoft.auth_system.entities.Role;
 import com.nisimsoft.auth_system.repositories.ProgramRepository;
@@ -70,5 +72,13 @@ public class ProgramService {
 
     return rootPrograms.stream().map(ProgramMapper::toDTOWithoutRoles).toList();
 
+  }
+
+  public List<ProgramResponseWithoutRolesLoginDTO> getProgramTreeWithActions(Set<Role> userRoles,
+      Set<Permission> userPermissions) {
+    List<Program> rootPrograms = programRepository.findDistinctByRolesInAndParentIsNull(userRoles);
+    return rootPrograms.stream()
+        .map(program -> ProgramMapper.toDTOWithSystemPermissions(program, userPermissions))
+        .toList();
   }
 }
