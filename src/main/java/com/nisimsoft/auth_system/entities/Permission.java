@@ -41,6 +41,11 @@ public class Permission {
   @Size(max = 50, message = "El valor del permiso del permiso no puede exceder los 50 caracteres")
   private String value;
 
+  @Column(name = "program_uri", nullable = true, length = 50)
+  @Size(min = 3, message = "La URI del programa debe tener al menos 3 caracteres")
+  @Size(max = 50, message = "La URI del programa no puede exceder los 50 caracteres")
+  private String programUri;
+
   @Column
   @Enumerated(EnumType.STRING)
   private PermissionTypeEnum type;

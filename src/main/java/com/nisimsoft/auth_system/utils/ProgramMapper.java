@@ -50,24 +50,12 @@ public class ProgramMapper {
         public static ProgramResponseWithoutRolesLoginDTO toDTOWithSystemPermissions(
                         Program program,
                         Set<Permission> userPermissions) {
-                // Intentamos extraer una clave de URI que permita asociar con los permisos
-                String originalUri = program.getUri();
-                final String uriKey;
-                if (originalUri != null && originalUri.contains("-")) {
-                        uriKey = originalUri.substring(originalUri.lastIndexOf('-') + 1); // Ej: "gestion-usuarios" →
-                                                                                          // "usuarios"
-                } else if (originalUri != null) {
-                        uriKey = originalUri; // Si no contiene "-", usamos el URI completo
-                } else {
-                        uriKey = null;
-                }
-
                 List<String> systemPermissions = new ArrayList<>();
 
-                if (uriKey != null) {
+                if (program.getUri() != null) {
                         systemPermissions = userPermissions.stream()
                                         .filter(p -> p.getType() == PermissionTypeEnum.SYSTEM)
-                                        .filter(p -> p.getValue().endsWith(uriKey)) // Ahora comparamos contra el sufijo
+                                        .filter(p -> program.getUri().equals(p.getProgramUri()))
                                         .map(Permission::getValue)
                                         .toList();
                 }

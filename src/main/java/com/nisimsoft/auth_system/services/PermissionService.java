@@ -28,6 +28,7 @@ public class PermissionService {
     permission.setName(request.getName());
     permission.setValue(request.getValue());
     permission.setType(request.getType());
+    permission.setProgramUri(request.getProgramUri());
 
     return permissionRepository.save(permission);
   }
